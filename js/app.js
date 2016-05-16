@@ -31,6 +31,36 @@ var showQuestion = function(question) {
 	return result;
 };
 
+var showAnswerer = function(answerer) {
+	
+	// clone our result template code
+	var result = $('.templates .answerer').clone();
+	
+	// Set the answerer properties in result
+	var questionElem = result.find('.answerer-text a');
+	questionElem.attr('href', answerer.link);
+	questionElem.text(answerer.display_name);
+
+	// set the accept_rate property in result
+	var accepted = result.find('.accept-rate');
+	var rate = answerer.accept_rate;
+	if (rate) {
+		accepted.text(rate.toString());
+	} else {
+		accepted.text('Not Available');
+	}
+
+	// set the .viewed for question property in result
+	var profImg = result.find('.prof-image');
+	profImg.html('<img src="' + answerer.profile_image + '">');
+
+	// set some properties related to asker
+	var rep = result.find('.rep');
+	rep.text(answerer.reputation.toString());
+
+	return result;
+};
+
 
 // this function takes the results object from StackOverflow
 // and returns the number of results and tags to be appended to DOM
@@ -86,7 +116,6 @@ var getAnswerer = function(tags) {
 		tagged: tags,
 		site: 'stackoverflow',
 		order: 'desc',
-		sort: 'votes',
 		period: 'month'
 	};
 
@@ -104,7 +133,8 @@ var getAnswerer = function(tags) {
 		
 		$('.search-results').html(searchResults);
 		$.each(result.items, function(i, item) {
-			var question = showQuestion(item);
+			console.log(item);
+			var question = showAnswerer(item.user);
 			$('.results').append(question);
 		});
 	})
