@@ -31,6 +31,36 @@ var showQuestion = function(question) {
 	return result;
 };
 
+var showAnswerer = function(answerer) {
+	
+	// clone our result template code
+	var result = $('.templates .answerer').clone();
+	
+	// Set the answerer properties in result
+	var questionElem = result.find('.answerer-text a');
+	questionElem.attr('href', answerer.link);
+	questionElem.text(answerer.display_name);
+
+	// set the accept_rate property in result
+	var accepted = result.find('.accept-rate');
+	var rate = answerer.accept_rate;
+	if (rate) {
+		accepted.text(rate.toString());
+	} else {
+		accepted.text('Not Available');
+	}
+
+	// set the .viewed for question property in result
+	var profImg = result.find('.prof-image');
+	profImg.html('<img src="' + answerer.profile_image + '">');
+
+	// set some properties related to asker
+	var rep = result.find('.rep');
+	rep.text(answerer.reputation.toString());
+
+	return result;
+};
+
 
 // this function takes the results object from StackOverflow
 // and returns the number of results and tags to be appended to DOM
@@ -62,7 +92,7 @@ var getUnanswered = function(tags) {
 		url: "http://api.stackexchange.com/2.2/questions/unanswered",
 		data: request,
 		dataType: "jsonp",//use jsonp to avoid cross origin issues
-		type: "GET",
+		type: "GET"
 	})
 	.done(function(result){ //this waits for the ajax to return with a succesful promise object
 		var searchResults = showSearchResults(request.tagged, result.items.length);
@@ -81,6 +111,38 @@ var getUnanswered = function(tags) {
 	});
 };
 
+var getAnswerer = function(tags) {
+	var request = {
+		tagged: tags,
+		site: 'stackoverflow',
+		order: 'desc',
+		period: 'month'
+	};
+
+	$.ajax({
+		url:"http://api.stackexchange.com/2.2/tags/" +
+		request.tagged +
+		"/top-answerers/" +
+		request.period,
+		data: request,
+		dataType: "jsonp",
+		type: "GET"
+	})
+	.done(function(result) {
+		var searchResults = showSearchResults(request.tagged, result.items.length);
+		
+		$('.search-results').html(searchResults);
+		$.each(result.items, function(i, item) {
+			console.log(item);
+			var question = showAnswerer(item.user);
+			$('.results').append(question);
+		});
+	})
+	.fail(function(jqXHR, error) {
+		var errorElem = showError(error);
+		$('.search-results').append(errorElem);
+	});
+};
 
 $(document).ready( function() {
 	$('.unanswered-getter').submit( function(e){
@@ -90,5 +152,13 @@ $(document).ready( function() {
 		// get the value of the tags the user submitted
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
+	});
+		$('.inspiration-getter').submit( function(e){
+		e.preventDefault();
+		// zero out results if previous search has run
+		$('.results').html('');
+		// get the value of the tags the user submitted
+		var tags = $(this).find("input[name='tags']").val();
+		getAnswerer(tags);
 	});
 });
