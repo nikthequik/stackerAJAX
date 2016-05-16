@@ -62,7 +62,7 @@ var getUnanswered = function(tags) {
 		url: "http://api.stackexchange.com/2.2/questions/unanswered",
 		data: request,
 		dataType: "jsonp",//use jsonp to avoid cross origin issues
-		type: "GET",
+		type: "GET"
 	})
 	.done(function(result){ //this waits for the ajax to return with a succesful promise object
 		var searchResults = showSearchResults(request.tagged, result.items.length);
@@ -81,6 +81,38 @@ var getUnanswered = function(tags) {
 	});
 };
 
+var getAnswerer = function(tags) {
+	var request = {
+		tagged: tags,
+		site: 'stackoverflow',
+		order: 'desc',
+		sort: 'votes',
+		period: 'month'
+	};
+
+	$.ajax({
+		url:"http://api.stackexchange.com/2.2/tags/" +
+		request.tagged +
+		"/top-answerers/" +
+		request.period,
+		data: request,
+		dataType: "jsonp",
+		type: "GET"
+	})
+	.done(function(result) {
+		var searchResults = showSearchResults(request.tagged, result.items.length);
+		
+		$('.search-results').html(searchResults);
+		$.each(result.items, function(i, item) {
+			var question = showQuestion(item);
+			$('.results').append(question);
+		});
+	})
+	.fail(function(jqXHR, error) {
+		var errorElem = showError(error);
+		$('.search-results').append(errorElem);
+	});
+};
 
 $(document).ready( function() {
 	$('.unanswered-getter').submit( function(e){
@@ -90,5 +122,13 @@ $(document).ready( function() {
 		// get the value of the tags the user submitted
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
+	});
+		$('.inspiration-getter').submit( function(e){
+		e.preventDefault();
+		// zero out results if previous search has run
+		$('.results').html('');
+		// get the value of the tags the user submitted
+		var tags = $(this).find("input[name='tags']").val();
+		getAnswerer(tags);
 	});
 });
