@@ -116,7 +116,8 @@ var getAnswerer = function(tags) {
 		tagged: tags,
 		site: 'stackoverflow',
 		order: 'desc',
-		period: 'month'
+		period: 'month',
+		sort: 'reputation'
 	};
 
 	$.ajax({
@@ -153,7 +154,7 @@ $(document).ready( function() {
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
 	});
-		$('.inspiration-getter').submit( function(e){
+	$('.inspiration-getter').submit( function(e){
 		e.preventDefault();
 		// zero out results if previous search has run
 		$('.results').html('');
